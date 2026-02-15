@@ -1,4 +1,4 @@
-FROM golang:1.23-alpine AS builder
+FROM golang:1.24-alpine AS builder
 
 WORKDIR /app
 COPY go.mod go.sum ./
@@ -11,10 +11,11 @@ RUN apk add --no-cache tzdata
 WORKDIR /app
 COPY --from=builder /app/timetable .
 COPY web/ web/
+COPY *.txt metadata.xml ./data/
 
 EXPOSE 8080
-ENV GTFS_DATA_DIR=/data
-ENV DB_PATH=/data/timetable.db
+ENV GTFS_DATA_DIR=/app/data
+ENV DB_PATH=/tmp/timetable.db
 ENV TEMPLATE_DIR=/app/web/templates
 ENV STATIC_DIR=/app/web/static
 
