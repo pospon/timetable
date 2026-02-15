@@ -11,10 +11,10 @@ RUN apk add --no-cache tzdata
 WORKDIR /app
 COPY --from=builder /app/timetable .
 COPY web/ web/
-COPY *.txt metadata.xml ./data/
+COPY gtfs/ ./gtfs/
 
 EXPOSE 8080
-ENV GTFS_DATA_DIR=/app/data
+ENV GTFS_DATA_DIR=/app/gtfs
 ENV DB_PATH=/tmp/timetable.db
 ENV TEMPLATE_DIR=/app/web/templates
 ENV STATIC_DIR=/app/web/static
