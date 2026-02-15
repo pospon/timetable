@@ -7,6 +7,7 @@ import (
 )
 
 type Connection struct {
+	TripID        string
 	Line          string
 	RouteType     int
 	Headsign      string
@@ -82,6 +83,8 @@ func (idx *Index) FindConnections(fromStationID, toStationID string, currentTime
 		}
 	}
 
+	connections = deduplicateConnections(connections)
+
 	sort.Slice(connections, func(i, j int) bool {
 		return connections[i].DepartureTime < connections[j].DepartureTime
 	})
@@ -103,6 +106,7 @@ func (idx *Index) checkTrip(dep Departure, toPlatformSet map[string]bool, active
 		if toPlatformSet[ts.StopID] {
 			routeID := idx.TripRoute[dep.TripID]
 			return Connection{
+				TripID:        dep.TripID,
 				Line:          idx.RouteShortName[routeID],
 				RouteType:     idx.RouteType[routeID],
 				Headsign:      idx.TripHeadsign[dep.TripID],
@@ -115,4 +119,19 @@ func (idx *Index) checkTrip(dep Departure, toPlatformSet map[string]bool, active
 		}
 	}
 	return Connection{}, false
+}
+
+func deduplicateConnections(conns []Connection) []Connection {
+	best := make(map[string]Connection)
+	for _, c := range conns {
+		key := c.TripID + "|" + fmt.Sprintf("%d", c.ArrivalTime)
+		if existing, ok := best[key]; !ok || c.Duration < existing.Duration {
+			best[key] = c
+		}
+	}
+	result := make([]Connection, 0, len(best))
+	for _, c := range best {
+		result = append(result, c)
+	}
+	return result
 }
