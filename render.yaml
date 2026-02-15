@@ -8,3 +8,23 @@ services:
         value: Europe/Prague
       - key: GTFS_SOURCE_URL
         value: http://www.dpmlj.cz/gtfs.zip
+    # --- Paid plan with persistent disk ---
+    # To switch to a paid plan with persistent storage:
+    # 1. Change plan to "starter" (or higher)
+    # 2. Uncomment the disk and env overrides below
+    # 3. Remove or comment out the free-tier GTFS_DATA_DIR/DB_PATH defaults in Dockerfile
+    #
+    # plan: starter
+    # disk:
+    #   name: timetable-data
+    #   mountPath: /data
+    #   sizeGB: 1
+    # envVars:
+    #   - key: TZ
+    #     value: Europe/Prague
+    #   - key: GTFS_SOURCE_URL
+    #     value: http://www.dpmlj.cz/gtfs.zip
+    #   - key: GTFS_DATA_DIR
+    #     value: /data/gtfs
+    #   - key: DB_PATH
+    #     value: /data/timetable.db

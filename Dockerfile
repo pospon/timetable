@@ -14,9 +14,10 @@ COPY web/ web/
 COPY gtfs/ ./gtfs-seed/
 
 EXPOSE 8080
+ENV GTFS_SEED_DIR=/app/gtfs-seed
 ENV GTFS_DATA_DIR=/tmp/gtfs
 ENV DB_PATH=/tmp/timetable.db
 ENV TEMPLATE_DIR=/app/web/templates
 ENV STATIC_DIR=/app/web/static
 
-CMD mkdir -p /tmp/gtfs && cp -n ./gtfs-seed/* /tmp/gtfs/ 2>/dev/null; ./timetable
+CMD mkdir -p "$GTFS_DATA_DIR" && cp -n "$GTFS_SEED_DIR"/* "$GTFS_DATA_DIR"/ 2>/dev/null; ./timetable

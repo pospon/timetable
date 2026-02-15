@@ -38,19 +38,42 @@ Open http://localhost:8080
 | Environment variable | Default | Description |
 |---|---|---|
 | `LISTEN_ADDR` | `:8080` | HTTP listen address |
-| `GTFS_DATA_DIR` | `.` | Directory containing GTFS .txt files |
+| `GTFS_DATA_DIR` | `gtfs` | Directory containing GTFS .txt files |
 | `DB_PATH` | `<GTFS_DATA_DIR>/timetable.db` | SQLite database path |
 | `TEMPLATE_DIR` | `web/templates` | HTML template directory |
 | `STATIC_DIR` | `web/static` | Static assets directory |
-| `GTFS_SOURCE_URL` | _(empty)_ | URL to download fresh GTFS zip (enables auto-update) |
+| `GTFS_SOURCE_URL` | `http://www.dpmlj.cz/gtfs.zip` | URL to download fresh GTFS zip for auto-update |
+| `GTFS_SEED_DIR` | `/app/gtfs-seed` | (Docker only) Initial GTFS files baked into the image |
 
 ## Docker
 
 ```bash
-# Copy GTFS files into data/ directory first
 make docker-build
 docker compose up
 ```
+
+## Render deployment
+
+The app is configured for Render via `render.yaml`.
+
+### Free plan (default)
+
+- GTFS data is baked into the Docker image and copied to `/tmp/gtfs` on startup
+- SQLite DB is rebuilt on every cold start (the free tier spins down after inactivity)
+- Auto-update checks run but won't survive restarts
+
+### Paid plan with persistent storage
+
+To switch to a paid plan with a persistent disk (data survives restarts and deploys):
+
+1. In `render.yaml`, change `plan: free` to `plan: starter`
+2. Uncomment the `disk` and env override sections in `render.yaml`
+3. Set the env vars in Render dashboard or via the blueprint:
+   - `GTFS_DATA_DIR=/data/gtfs`
+   - `DB_PATH=/data/timetable.db`
+4. The 1 GB disk mounted at `/data` will persist the SQLite DB and downloaded GTFS updates
+
+With persistent storage, the DB is built once and reused across restarts. The updater downloads fresh GTFS data from DPMLJ when the feed approaches its expiration date (within 3 days of `ValidTo`).
 
 ## Project structure
 
