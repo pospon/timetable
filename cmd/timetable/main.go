@@ -5,12 +5,22 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	"timetable/internal/updater"
 	"timetable/internal/web"
 )
 
 func main() {
+	if tz := os.Getenv("TZ"); tz != "" {
+		loc, err := time.LoadLocation(tz)
+		if err != nil {
+			log.Fatalf("Invalid TZ %q: %v", tz, err)
+		}
+		time.Local = loc
+		log.Printf("Timezone set to %s", tz)
+	}
+
 	dataDir := envOrDefault("GTFS_DATA_DIR", "gtfs")
 	dbPath := envOrDefault("DB_PATH", filepath.Join(dataDir, "timetable.db"))
 	sourceURL := envOrDefault("GTFS_SOURCE_URL", "http://www.dpmlj.cz/gtfs.zip")
