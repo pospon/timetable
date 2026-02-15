@@ -13,7 +13,7 @@ import (
 func main() {
 	dataDir := envOrDefault("GTFS_DATA_DIR", "gtfs")
 	dbPath := envOrDefault("DB_PATH", filepath.Join(dataDir, "timetable.db"))
-	sourceURL := os.Getenv("GTFS_SOURCE_URL")
+	sourceURL := envOrDefault("GTFS_SOURCE_URL", "http://www.dpmlj.cz/gtfs.zip")
 	addr := envOrDefault("LISTEN_ADDR", ":8080")
 	templateDir := envOrDefault("TEMPLATE_DIR", "web/templates")
 	staticDir := envOrDefault("STATIC_DIR", "web/static")

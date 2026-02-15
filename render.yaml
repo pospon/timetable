@@ -6,3 +6,5 @@ services:
     envVars:
       - key: TZ
         value: Europe/Prague
+      - key: GTFS_SOURCE_URL
+        value: http://www.dpmlj.cz/gtfs.zip
