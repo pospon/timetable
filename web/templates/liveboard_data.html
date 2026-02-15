@@ -11,6 +11,7 @@
             <th>Odjezd</th>
             <th>Příjezd</th>
             <th>Jízda</th>
+            <th>Za</th>
         </tr>
     </thead>
     <tbody>
@@ -21,6 +22,7 @@
             <td class="time">{{formatTime .DepartureTime}}</td>
             <td class="time">{{formatTime .ArrivalTime}}</td>
             <td>{{formatDuration .Duration}}</td>
+            <td class="time countdown">{{if le .ArrivesIn 0}}&lt;1 min{{else}}{{.ArrivesIn}} min{{end}}</td>
         </tr>
         {{end}}
     </tbody>

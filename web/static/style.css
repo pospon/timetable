@@ -234,6 +234,10 @@ header h1 {
     font-weight: 600;
 }
 
+.countdown {
+    color: #e74c3c;
+}
+
 .line-badge {
     display: inline-block;
     padding: 2px 8px;

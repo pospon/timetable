@@ -173,6 +173,11 @@ func (h *Handler) HandleLiveBoard(w http.ResponseWriter, r *http.Request) {
 	h.templates.ExecuteTemplate(w, "liveboard.html", nil)
 }
 
+type liveConnection struct {
+	search.Connection
+	ArrivesIn int
+}
+
 func (h *Handler) HandleLiveBoardData(w http.ResponseWriter, r *http.Request) {
 	now := time.Now()
 	currentTime := now.Hour()*3600 + now.Minute()*60 + now.Second()
@@ -180,14 +185,23 @@ func (h *Handler) HandleLiveBoardData(w http.ResponseWriter, r *http.Request) {
 	idx := h.updater.Index()
 	connections := idx.FindConnections("11311", "911", currentTime, 60, now)
 
+	live := make([]liveConnection, len(connections))
+	for i, c := range connections {
+		arrivesIn := (c.ArrivalTime - currentTime) / 60
+		if arrivesIn < 0 {
+			arrivesIn = 0
+		}
+		live[i] = liveConnection{Connection: c, ArrivesIn: arrivesIn}
+	}
+
 	data := struct {
-		Connections []search.Connection
+		Connections []liveConnection
 		UpdatedAt   string
 		Count       int
 	}{
-		Connections: connections,
+		Connections: live,
 		UpdatedAt:   now.Format("15:04:05"),
-		Count:       len(connections),
+		Count:       len(live),
 	}
 
 	h.templates.ExecuteTemplate(w, "liveboard_data.html", data)
