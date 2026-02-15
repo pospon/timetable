@@ -1,0 +1,29 @@
+{{if eq .Count 0}}
+<div class="no-results">
+    <p>Žádná spojení v příští hodině.</p>
+</div>
+{{else}}
+<table class="results-table">
+    <thead>
+        <tr>
+            <th>Linka</th>
+            <th>Směr</th>
+            <th>Odjezd</th>
+            <th>Příjezd</th>
+            <th>Jízda</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{range .Connections}}
+        <tr>
+            <td><span class="line-badge {{routeTypeIcon .RouteType}}">{{.Line}}</span></td>
+            <td>{{.Headsign}}</td>
+            <td class="time">{{formatTime .DepartureTime}}</td>
+            <td class="time">{{formatTime .ArrivalTime}}</td>
+            <td>{{formatDuration .Duration}}</td>
+        </tr>
+        {{end}}
+    </tbody>
+</table>
+{{end}}
+<p class="update-time">Aktualizováno v {{.UpdatedAt}}</p>

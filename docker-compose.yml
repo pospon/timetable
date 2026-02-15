@@ -1,0 +1,13 @@
+services:
+  timetable:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/data
+    environment:
+      - TZ=Europe/Prague
+      - GTFS_DATA_DIR=/data
+      - DB_PATH=/data/timetable.db
+      - GTFS_SOURCE_URL=${GTFS_SOURCE_URL:-}
+    restart: unless-stopped

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jízdní řády DPMLJ</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Jízdní řády DPMLJ</h1>
+            <p class="subtitle">Liberec a Jablonec nad Nisou</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('connections')">Spojení</button>
+            <button class="tab" onclick="switchTab('departures')">Odjezdy</button>
+        </div>
+
+        <div id="connections-tab" class="tab-content active">
+            <form class="search-form" id="connection-form">
+                <div class="form-group">
+                    <label for="from-input">Odkud</label>
+                    <div class="autocomplete-wrapper">
+                        <input type="text" id="from-input" autocomplete="off" placeholder="Zadejte zastávku...">
+                        <input type="hidden" id="from-id" name="from">
+                        <div class="autocomplete-list" id="from-list"></div>
+                    </div>
+                </div>
+
+                <button type="button" class="swap-btn" onclick="swapStops()" title="Prohodit">⇅</button>
+
+                <div class="form-group">
+                    <label for="to-input">Kam</label>
+                    <div class="autocomplete-wrapper">
+                        <input type="text" id="to-input" autocomplete="off" placeholder="Zadejte zastávku...">
+                        <input type="hidden" id="to-id" name="to">
+                        <div class="autocomplete-list" id="to-list"></div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="conn-time">Čas</label>
+                        <input type="time" id="conn-time" name="time">
+                    </div>
+                    <div class="form-group">
+                        <label for="conn-date">Datum</label>
+                        <input type="date" id="conn-date" name="date">
+                    </div>
+                    <div class="form-group">
+                        <label for="conn-window">Okno (min)</label>
+                        <select id="conn-window" name="window">
+                            <option value="30">30</option>
+                            <option value="60" selected>60</option>
+                            <option value="120">120</option>
+                            <option value="180">180</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn"
+                    hx-get="/search"
+                    hx-target="#results"
+                    hx-include="#connection-form"
+                    hx-indicator="#loading">
+                    Hledat spojení
+                </button>
+            </form>
+        </div>
+
+        <div id="departures-tab" class="tab-content">
+            <form class="search-form" id="departure-form">
+                <div class="form-group">
+                    <label for="dep-input">Zastávka</label>
+                    <div class="autocomplete-wrapper">
+                        <input type="text" id="dep-input" autocomplete="off" placeholder="Zadejte zastávku...">
+                        <input type="hidden" id="dep-id" name="station">
+                        <div class="autocomplete-list" id="dep-list"></div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dep-time">Čas</label>
+                        <input type="time" id="dep-time" name="time">
+                    </div>
+                    <div class="form-group">
+                        <label for="dep-date">Datum</label>
+                        <input type="date" id="dep-date" name="date">
+                    </div>
+                    <div class="form-group">
+                        <label for="dep-window">Okno (min)</label>
+                        <select id="dep-window" name="window">
+                            <option value="30">30</option>
+                            <option value="60" selected>60</option>
+                            <option value="120">120</option>
+                            <option value="180">180</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn"
+                    hx-get="/departures"
+                    hx-target="#results"
+                    hx-include="#departure-form"
+                    hx-indicator="#loading">
+                    Zobrazit odjezdy
+                </button>
+            </form>
+        </div>
+
+        <div id="loading" class="htmx-indicator">Načítání...</div>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById(tab + '-tab').classList.add('active');
+            event.target.classList.add('active');
+            document.getElementById('results').innerHTML = '';
+        }
+
+        function swapStops() {
+            const fromInput = document.getElementById('from-input');
+            const toInput = document.getElementById('to-input');
+            const fromId = document.getElementById('from-id');
+            const toId = document.getElementById('to-id');
+            [fromInput.value, toInput.value] = [toInput.value, fromInput.value];
+            [fromId.value, toId.value] = [toId.value, fromId.value];
+        }
+
+        function setupAutocomplete(inputId, hiddenId, listId) {
+            const input = document.getElementById(inputId);
+            const hidden = document.getElementById(hiddenId);
+            const list = document.getElementById(listId);
+            let debounceTimer;
+
+            input.addEventListener('input', function() {
+                clearTimeout(debounceTimer);
+                const q = this.value.trim();
+                if (q.length < 2) {
+                    list.innerHTML = '';
+                    list.style.display = 'none';
+                    return;
+                }
+                debounceTimer = setTimeout(() => {
+                    fetch('/api/stops?q=' + encodeURIComponent(q))
+                        .then(r => r.json())
+                        .then(data => {
+                            list.innerHTML = '';
+                            if (data.length === 0) {
+                                list.style.display = 'none';
+                                return;
+                            }
+                            data.forEach(s => {
+                                const div = document.createElement('div');
+                                div.className = 'autocomplete-item';
+                                div.textContent = s.name;
+                                div.addEventListener('click', () => {
+                                    input.value = s.name;
+                                    hidden.value = s.id;
+                                    list.innerHTML = '';
+                                    list.style.display = 'none';
+                                });
+                                list.appendChild(div);
+                            });
+                            list.style.display = 'block';
+                        });
+                }, 200);
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!input.contains(e.target) && !list.contains(e.target)) {
+                    list.style.display = 'none';
+                }
+            });
+        }
+
+        setupAutocomplete('from-input', 'from-id', 'from-list');
+        setupAutocomplete('to-input', 'to-id', 'to-list');
+        setupAutocomplete('dep-input', 'dep-id', 'dep-list');
+    </script>
+</body>
+</html>

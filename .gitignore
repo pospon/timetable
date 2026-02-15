@@ -1,0 +1,5 @@
+data/
+*.db
+timetable
+.idea/
+gtfs.zip

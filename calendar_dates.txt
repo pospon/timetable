@@ -1,0 +1,4 @@
+service_id,date,exception_type
+6,20260130,2
+9,20260129,1
+9,20260130,2

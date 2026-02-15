@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Melantrichova → Fügnerova | DPMLJ</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Melantrichova → Fügnerova</h1>
+            <p class="subtitle">Příští odjezdy (automatická aktualizace)</p>
+        </header>
+
+        <div id="live-data"
+             hx-get="/live/data"
+             hx-trigger="load, every 30s"
+             hx-swap="innerHTML">
+            <p class="loading-text">Načítání...</p>
+        </div>
+
+        <div class="live-footer">
+            <a href="/" class="back-link">← Zpět na vyhledávání</a>
+        </div>
+    </div>
+</body>
+</html>
