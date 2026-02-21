@@ -17,8 +17,8 @@ func NewRouter(u *updater.Updater, templateDir, staticDir string) (http.Handler,
 	mux.HandleFunc("GET /api/stops", h.HandleStopAutocomplete)
 	mux.HandleFunc("GET /search", h.HandleSearch)
 	mux.HandleFunc("GET /departures", h.HandleDepartures)
-	mux.HandleFunc("GET /live", h.HandleLiveBoard)
-	mux.HandleFunc("GET /live/data", h.HandleLiveBoardData)
+	mux.HandleFunc("GET /z-domova", h.HandleLiveBoard)
+	mux.HandleFunc("GET /z-domova/data", h.HandleLiveBoardData)
 	mux.HandleFunc("GET /health", h.HandleHealth)
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir(staticDir))))
 
