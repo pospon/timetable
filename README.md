@@ -52,28 +52,20 @@ make docker-build
 docker compose up
 ```
 
-## Render deployment
+## Deployment
 
-The app is configured for Render via `render.yaml`.
+Live at **https://odjezdy.poposkoc.cz**
 
-### Free plan (default)
+The app runs on a Raspberry Pi 5 via Docker, deployed automatically through GitHub Actions:
 
-- GTFS data is baked into the Docker image and copied to `/tmp/gtfs` on startup
-- SQLite DB is rebuilt on every cold start (the free tier spins down after inactivity)
-- Auto-update checks run but won't survive restarts
+1. Push to `main` triggers `.github/workflows/deploy.yml`
+2. GitHub Actions builds a `linux/arm64` Docker image and pushes it to GHCR
+3. Watchtower on the Pi polls GHCR every 5 minutes and auto-updates the container
+4. Traefik handles HTTPS via Let's Encrypt
 
-### Paid plan with persistent storage
+Infrastructure config (docker-compose.yml, Traefik) lives in the [homeserver](https://github.com/pospon/homeserver) repo.
 
-To switch to a paid plan with a persistent disk (data survives restarts and deploys):
-
-1. In `render.yaml`, change `plan: free` to `plan: starter`
-2. Uncomment the `disk` and env override sections in `render.yaml`
-3. Set the env vars in Render dashboard or via the blueprint:
-   - `GTFS_DATA_DIR=/data/gtfs`
-   - `DB_PATH=/data/timetable.db`
-4. The 1 GB disk mounted at `/data` will persist the SQLite DB and downloaded GTFS updates
-
-With persistent storage, the DB is built once and reused across restarts. The updater downloads fresh GTFS data from DPMLJ when the feed approaches its expiration date (within 3 days of `ValidTo`).
+The container uses a persistent Docker volume (`timetable-data`) mounted at `/data` for the SQLite database and GTFS files. GTFS seed data is baked into the image and copied on first run.
 
 ## Project structure
 
